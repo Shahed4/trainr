@@ -1,19 +1,27 @@
 "use client";
-import Link from "next/link";
+import localFont from "next/font/local";
+import "./globals.css";
+
+const geistSans = localFont({
+  src: "./fonts/GeistVF.woff",
+  variable: "--font-geist-sans",
+  weight: "100 900",
+});
+
+const geistMono = localFont({
+  src: "./fonts/GeistMonoVF.woff",
+  variable: "--font-geist-mono",
+  weight: "100 900",
+});
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
         <title>Trainr</title>
-        <meta name="Therapy" content="Helps revlive pain in your muscles" />
+        <meta name="description" content="Trainr | Beautiful AI-assisted physical therapy guidance" />
       </head>
-      <body>
-        <nav>
-          <Link href="/">Home</Link>
-        </nav>
-        <main>{children}</main>
-      </body>
+      <body className={`${geistSans.variable} ${geistMono.variable}`}>{children}</body>
     </html>
   );
 }

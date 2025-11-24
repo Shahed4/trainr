@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import Container from "@mui/material/Container";
 import { useRouter } from "next/navigation";
@@ -26,6 +26,24 @@ const textStyle = {
 
 function Page() {
   const router = useRouter();
+  const [selectedExercise, setSelectedExercise] = useState(null);
+
+  const exercises = [
+    {
+      id: "external_rotation",
+      name: "External Shoulder Rotation",
+      description: "Focuses on Infraspinatus, teres minor, posterior deltoid. You should feel this stretch in the back of your shoulder and upper back.",
+      image: "./assets/images/Standing-Shoulder-Rotation.png",
+      route: "/therapy/external"
+    },
+    {
+      id: "pushup",
+      name: "Push Up",
+      description: "A classic upper body exercise targeting chest, shoulders, and triceps. Maintain proper form with a straight body line.",
+      image: "./assets/images/main.png", // You may want to add a push-up image
+      route: "/therapy/external" // Can create a separate route later
+    }
+  ];
 
   return (
     <div
@@ -37,66 +55,97 @@ function Page() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+        flexDirection: "column",
       }}
     >
       <h1
         style={{
-          margin: "0", // Remove default margin
+          margin: "0",
           padding: "4px 8px",
-          textAlign: "left", // Align text to the left
+          textAlign: "left",
           backgroundColor: "white",
           borderRadius: "4px",
-          position: "absolute", // Allows it to be positioned without affecting the flex layout
-          top: "10px", // Position at the top
-          left: "10px", // Position at the left
+          position: "absolute",
+          top: "10px",
+          left: "10px",
         }}
       >
         Hello TestNAME!
       </h1>
 
-      <div style={{ display: "inline-block" }}>
-        <div
-          style={{ width: "400px", backgroundColor: "white", display: "flex" }}
-        >
+      <h2 style={{ 
+        textAlign: "center", 
+        backgroundColor: "white", 
+        padding: "10px",
+        borderRadius: "4px",
+        marginBottom: "20px"
+      }}>
+        Select an Exercise to Start
+      </h2>
+
+      <div style={{ 
+        display: "flex", 
+        flexDirection: "row", 
+        gap: "20px",
+        flexWrap: "wrap",
+        justifyContent: "center"
+      }}>
+        {exercises.map((exercise) => (
           <div
+            key={exercise.id}
             style={{
+              width: "400px",
+              backgroundColor: "white",
               border: "2px solid black",
-              padding: "5px",
+              padding: "20px",
               textAlign: "center",
-              display: "inline-block",
+              borderRadius: "8px",
+              cursor: "pointer",
+              transition: "transform 0.2s",
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"}
+            onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
+            onClick={() => {
+              setSelectedExercise(exercise.id);
+              router.push(`${exercise.route}?exercise=${exercise.id}`);
             }}
           >
             <h3
               style={{
-                margin: "0px",
+                margin: "0px 0px 10px 0px",
                 padding: "4px 8px",
-                backgroundColor: "white",
+                backgroundColor: "#2F4F4F",
+                color: "white",
                 display: "inline-block",
                 borderRadius: "5px",
               }}
             >
-              External Rotations
+              {exercise.name}
             </h3>
 
-            <p style={{ margin: "2px 5px 2px 5px" }}>
-              Focuses on <i>Infraspinatus, teres minor, posterior deltoid</i>.
-              You should feel this stretch in the back of your shoulder and
-              upper back.
+            <p style={{ margin: "10px 5px" }}>
+              {exercise.description}
             </p>
             <img
-              src="./assets/images/Standing-Shoulder-Rotation.png" // Use forward slashes for paths
+              src={exercise.image}
               width="200px"
               height="200px"
-              style={{ marginTop: "20px" }} // Apply marginTop correctly within style
-              alt="Standing Shoulder Rotation" // Consider adding an alt attribute for accessibility
+              style={{ marginTop: "20px", objectFit: "contain" }}
+              alt={exercise.name}
             />
             <br />
-            <Link href="/therapy/external">
-              <h3 style={{ cursor: "pointer" }}>TESTING</h3>{" "}
-              {/* Ensured it's clickable */}
-            </Link>
+            <div style={{
+              marginTop: "15px",
+              padding: "10px",
+              backgroundColor: "#2F4F4F",
+              color: "white",
+              borderRadius: "4px",
+              fontWeight: "bold"
+            }}>
+              Click to Start →
+            </div>
           </div>
-        </div>
+        ))}
       </div>
     </div>
   );

@@ -1,5 +1,9 @@
-import React from "react";
+"use client";
+
+import React, { useState, useEffect } from "react";
 import Container from "@mui/material/Container";
+import { useSearchParams } from "next/navigation";
+
 const boxStyle = {
   backgroundColor: "#2F4F4F",
   color: "white",
@@ -19,8 +23,33 @@ const textStyle = {
   fontWeight: "normal",
 };
 
+const exerciseInfo = {
+  external_rotation: {
+    name: "External Shoulder Rotation",
+    image: "/assets/images/Standing_External_Rotation_with_Resistance_Band.gif",
+    description: "Focuses on Infraspinatus, teres minor, posterior deltoid"
+  },
+  pushup: {
+    name: "Push Up",
+    image: "/assets/images/main.png", // You may want to add a push-up GIF
+    description: "Classic upper body exercise targeting chest, shoulders, and triceps"
+  }
+};
+
 export default function ExternalRotation() {
-  console.log("Loaded");
+  const searchParams = useSearchParams();
+  const exerciseFromUrl = searchParams.get('exercise') || 'external_rotation';
+  const [selectedExercise, setSelectedExercise] = useState(exerciseFromUrl);
+  const [videoSrc, setVideoSrc] = useState(`http://localhost:5001/video-feed?exercise=${selectedExercise}`);
+
+  useEffect(() => {
+    // Update video source when exercise changes
+    const newVideoSrc = `http://localhost:5001/video-feed?exercise=${selectedExercise}&t=${Date.now()}`;
+    setVideoSrc(newVideoSrc);
+  }, [selectedExercise]);
+
+  const currentExercise = exerciseInfo[selectedExercise] || exerciseInfo.external_rotation;
+
   return (
     <div
       style={{
@@ -33,15 +62,43 @@ export default function ExternalRotation() {
       <h1
         style={{
           margin: "10px auto",
-          padding: "4px 8px", // Adjust padding to control spacing around text
+          padding: "4px 8px",
           textAlign: "center",
           backgroundColor: "white",
-          display: "inline-block", // Keeps the width only as wide as the text
-          borderRadius: "4px", // Optional: Adds slightly rounded corners for a neater look
+          display: "inline-block",
+          borderRadius: "4px",
         }}
       >
-        External Rotation
+        {currentExercise.name}
       </h1>
+
+      {/* Exercise Selection */}
+      <div style={{ 
+        textAlign: "center", 
+        margin: "10px",
+        padding: "10px",
+        backgroundColor: "white",
+        borderRadius: "4px",
+        display: "inline-block"
+      }}>
+        <label style={{ marginRight: "10px", fontWeight: "bold" }}>
+          Select Exercise:
+        </label>
+        <select
+          value={selectedExercise}
+          onChange={(e) => setSelectedExercise(e.target.value)}
+          style={{
+            padding: "8px",
+            fontSize: "16px",
+            borderRadius: "4px",
+            border: "2px solid #2F4F4F",
+            cursor: "pointer"
+          }}
+        >
+          <option value="external_rotation">External Shoulder Rotation</option>
+          <option value="pushup">Push Up</option>
+        </select>
+      </div>
 
       <Container
         style={{
@@ -55,23 +112,22 @@ export default function ExternalRotation() {
         <div style={{ padding: "10px", border: "2px solid black" }}>
           <h2 style={{ marginTop: "0px" }}>Follow this Exercise!</h2>
           <img
-            src={
-              "/assets/images/Standing_External_Rotation_with_Resistance_Band.gif"
-            }
-            alt="Standing External Rotation"
+            src={currentExercise.image}
+            alt={currentExercise.name}
             style={{
               width: "400px",
               height: "200px",
               marginLeft: "auto",
               marginRight: "auto",
+              objectFit: "contain",
             }}
           />
         </div>
         <div style={{ padding: "10px", border: "2px solid black" }}>
           <h2 style={{ marginLeft: "20px" }}>YOU!</h2>
           <img
-            // src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBwgHBgkIBwgKCgkLDRYPDQwMDRsUFRAWIB0iIiAdHx8kKDQsJCYxJx8fLT0tMTU3Ojo6Iys/RD84QzQ5OjcBCgoKDQwNGg8PGjclHyU3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3N//AABEIAJQA+QMBIgACEQEDEQH/xAAWAAEBAQAAAAAAAAAAAAAAAAAAAQf/xAAYEAEBAAMAAAAAAAAAAAAAAAAAAREhQf/EABUBAQEAAAAAAAAAAAAAAAAAAAAB/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8AxFFQAAAUBBRBBQEIEBQAABQABFBEVAFAAAAAAAAVABFAQVAFRQAQBUiglCgAAKAKAAAAIqCAAAKCKigAAAAAAIoCKAIAAAKAoiACioCKIooAAACCgiAoIoAIoBF0iggAoAIACoAIqEKAAAAKACAAKIooCAoAAAgAAAAAAAKAAAAIoCACAAAAAAAAAACgAAKAAACAAARcAgCgAigAAACKlAAEAAAAAAAAFQBRFFAAABAABUAAFABFAAAAAAQKCAAAAAAAAAACoAoAAAAAAAAKCCoKAAAAACJQAAAAAAAAAAAAAFRQAAF4gAAAAKqAAAAAIJVSgAAAAAAAAAAAoICgiooAAoACooAgKgAgAAAAJVAQBQAQAAAAAAUAAAAAAABQFAAf/9k="
-            src="http://localhost:5001/video-feed"
+            key={`video-${selectedExercise}`}
+            src={videoSrc}
             alt="Video Stream"
             style={{
               width: "400px",
