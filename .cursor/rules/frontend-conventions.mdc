@@ -1,0 +1,21 @@
+---
+description: Frontend conventions — NativeWind styling, lib folder structure, API wrapper naming
+globs: trainer_frontend/**/*.{ts,tsx,js,jsx}
+alwaysApply: false
+---
+
+# Frontend Conventions
+
+## Styling
+- Use a combination of **NativeWind** (Tailwind-style `className`) and React Native's **StyleSheet API** for styling.
+- Prefer NativeWind classes for common layout/spacing/color. Use `StyleSheet.create` when you need dynamic styles or values NativeWind doesn't cover.
+
+## `lib/` Folder Structure
+- All TypeScript types live in `trainer_frontend/lib/types.ts`.
+- All API function wrappers live in `trainer_frontend/lib/api.ts`.
+- When adding a new type, put it in `lib/types.ts`. When adding a new API call, put it in `lib/api.ts`.
+
+## API Function Wrappers (`lib/api.ts`)
+- Every API function **must** have a comment explaining what it does, its parameters, and return value.
+- Name API functions to **mirror the backend view** they call.
+  - Backend view: `get_training_sessions` → Frontend wrapper: `getTrainingSessions`

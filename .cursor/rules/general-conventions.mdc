@@ -1,0 +1,28 @@
+---
+description: General coding conventions for the trainr project — naming, comments, docstrings, and placeholder markers
+alwaysApply: true
+---
+
+# General Coding Conventions
+
+## Naming
+- Use **descriptive variable and function names** that clearly convey purpose.
+- Avoid single-letter or ambiguous names.
+  - Good: `matchedUsersList`, `isMatchRequestPending`, `fetchTrainingSession`
+  - Bad: `data`, `flag`, `x`
+
+## Comments & Docstrings
+- Add comments explaining **why** something is done, not just what.
+- Focus on intent, edge cases, and non-obvious logic.
+- Every function (frontend and backend) must have a **brief comment or docstring** summarizing its purpose, parameters, and return value.
+
+## Placeholder / Incomplete Features
+- Whenever an incomplete or placeholder feature is added, leave a comment starting with `MUST CHANGE LATER` explaining what needs to be finished.
+
+```
+// MUST CHANGE LATER: Replace hardcoded URL with environment variable
+```
+
+```python
+# MUST CHANGE LATER: Add proper error handling for rate limiting
+```

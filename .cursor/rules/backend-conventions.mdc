@@ -1,0 +1,22 @@
+---
+description: Backend conventions — DRF function-based views, docstrings, uv for Python tooling
+globs: trainer_backend/**/*.py
+alwaysApply: false
+---
+
+# Backend Conventions
+
+## Django REST Framework Views
+- All API views must be **function-based views** using DRF's `@api_view` decorator.
+- Every view function **must** include a docstring describing what it does, expected parameters, and response shape.
+
+## Python Package Management
+- Use **uv** for all Python package management. Never use bare `pip`.
+  - Install: `uv pip install <package>`
+  - Run scripts: `uv run <script>`
+  - Add dependency: `uv add <package>`
+- Keep `pyproject.toml` as the single source of truth for dependencies.
+
+## View Naming
+- Use clear, verb-prefixed names for views that describe the action: `get_`, `create_`, `update_`, `delete_`, `list_`.
+- The frontend API wrapper in `lib/api.ts` should mirror the view name in camelCase.

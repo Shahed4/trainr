@@ -1,0 +1,101 @@
+---
+description: Backend conventions — DRF function-based views, docstrings, uv for Python tooling
+globs: trainr_backend/**/*.py
+alwaysApply: false
+---
+
+# Backend Conventions
+
+## Django REST Framework Views
+- All API views must be **function-based views** using DRF's `@api_view` decorator.
+- Every view function **must** include a docstring describing what it does, expected parameters, and response shape.
+
+```python
+@api_view(["GET"])
+def get_training_sessions(request):
+    """
+    Return all training sessions for the authenticated user.
+
+    Returns:
+        200: List of serialized TrainingSession objects.
+    """
+    ...
+```
+
+## Python Package Management
+- Use **uv** for all Python package management. Never use bare `pip`.
+  - Install: `uv pip install <package>`
+  - Run scripts: `uv run <script>`
+  - Add dependency: `uv add <package>`
+- Keep `pyproject.toml` as the single source of truth for dependencies.
+
+## View Naming
+- Use clear, verb-prefixed names for views that describe the action: `get_`, `create_`, `update_`, `delete_`, `list_`.
+- The frontend API wrapper in `lib/api.ts` should mirror the view name in camelCase.
+
+
+---
+description: Frontend conventions — NativeWind styling, lib folder structure, API wrapper naming
+globs: trainer_frontend/**/*.{ts,tsx,js,jsx}
+alwaysApply: false
+---
+
+# Frontend Conventions
+
+## Styling
+- Use a combination of **NativeWind** (Tailwind-style `className`) and React Native's **StyleSheet API** for styling.
+- Prefer NativeWind classes for common layout/spacing/color. Use `StyleSheet.create` when you need dynamic styles or values NativeWind doesn't cover.
+
+```tsx
+// NativeWind for layout, StyleSheet for custom values
+<View className="flex-1 items-center p-4" style={styles.customShadow}>
+```
+
+## `lib/` Folder Structure
+- All TypeScript types live in `trainer_frontend/lib/types.ts`.
+- All API function wrappers live in `trainer_frontend/lib/api.ts`.
+- When adding a new type, put it in `lib/types.ts`. When adding a new API call, put it in `lib/api.ts`.
+
+## API Function Wrappers (`lib/api.ts`)
+- Every API function **must** have a comment explaining what it does, its parameters, and return value.
+- Name API functions to **mirror the backend view** they call.
+  - Backend view: `get_training_sessions` → Frontend wrapper: `getTrainingSessions`
+  - Backend view: `create_match_request` → Frontend wrapper: `createMatchRequest`
+
+```ts
+/**
+ * Fetches all training sessions for the authenticated user.
+ * Mirrors backend view: get_training_sessions
+ * @returns Promise resolving to an array of TrainingSession objects
+ */
+export async function getTrainingSessions(): Promise<TrainingSession[]> { ... }
+```
+---
+---
+description: General coding conventions for the trainr project — naming, comments, docstrings, and placeholder markers
+alwaysApply: true
+---
+
+# General Coding Conventions
+
+## Naming
+- Use **descriptive variable and function names** that clearly convey purpose.
+- Avoid single-letter or ambiguous names.
+  - Good: `matchedUsersList`, `isMatchRequestPending`, `fetchTrainingSession`
+  - Bad: `data`, `flag`, `x`
+
+## Comments & Docstrings
+- Add comments explaining **why** something is done, not just what.
+- Focus on intent, edge cases, and non-obvious logic.
+- Every function (frontend and backend) must have a **brief comment or docstring** summarizing its purpose, parameters, and return value.
+
+## Placeholder / Incomplete Features
+- Whenever an incomplete or placeholder feature is added, leave a comment starting with `MUST CHANGE LATER` explaining what needs to be finished.
+
+```
+// MUST CHANGE LATER: Replace hardcoded URL with environment variable
+```
+
+```python
+# MUST CHANGE LATER: Add proper error handling for rate limiting
+```
