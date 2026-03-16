@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -15,7 +15,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { generateMealPlan } from "@/lib/api";
+import { generateMealPlan, getProfile } from "@/lib/api";
 
 const PLAN_TYPES = ["daily", "weekly"] as const;
 const FITNESS_GOALS = ["cutting", "bulking", "maintenance"] as const;
@@ -38,6 +38,7 @@ export default function NewMealPlanScreen() {
   const colorScheme = useColorScheme() ?? "light";
   const router = useRouter();
 
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [planType, setPlanType] = useState<"daily" | "weekly">("daily");
   const [fitnessGoal, setFitnessGoal] = useState<string>("maintenance");
   const [dietaryPrefs, setDietaryPrefs] = useState<string[]>([]);
@@ -47,6 +48,31 @@ export default function NewMealPlanScreen() {
   const [fatTarget, setFatTarget] = useState("65");
   const [favoriteFoods, setFavoriteFoods] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+
+  /** Pre-populate form fields from the user's saved profile preferences. */
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const profile = await getProfile();
+        if (cancelled) return;
+
+        if (profile.fitness_goal) setFitnessGoal(profile.fitness_goal);
+        if (profile.dietary_preferences?.length) {
+          setDietaryPrefs(profile.dietary_preferences);
+        }
+        if (profile.calorie_target) setCalorieTarget(String(profile.calorie_target));
+        if (profile.protein_target) setProteinTarget(String(profile.protein_target));
+        if (profile.carbs_target) setCarbsTarget(String(profile.carbs_target));
+        if (profile.fat_target) setFatTarget(String(profile.fat_target));
+      } catch {
+        // Fall back to hardcoded defaults if profile fetch fails
+      } finally {
+        if (!cancelled) setIsLoadingProfile(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   /** Toggle a dietary preference chip. */
   function togglePref(pref: string) {
@@ -76,6 +102,14 @@ export default function NewMealPlanScreen() {
     } finally {
       setIsGenerating(false);
     }
+  }
+
+  if (isLoadingProfile) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center bg-white dark:bg-[#151718]" edges={["bottom"]}>
+        <ActivityIndicator size="large" color={Colors[colorScheme].tint} />
+      </SafeAreaView>
+    );
   }
 
   return (

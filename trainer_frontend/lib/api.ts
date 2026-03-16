@@ -96,6 +96,19 @@ export async function updateProfile(
   });
 }
 
+/**
+ * Ask the AI to generate calorie and workout recommendations. Mirrors: generate_recommendations
+ * @returns Recommended daily calories and weekly workouts.
+ */
+export async function generateRecommendations(): Promise<{
+  daily_calories: number;
+  weekly_workouts: number;
+}> {
+  return apiFetch("/api/users/profile/recommendations/", {
+    method: "POST",
+  });
+}
+
 // ─── Calories ───────────────────────────────────────────────────────────
 
 /**
@@ -132,13 +145,19 @@ export async function analyzeMealImage(imageUri: string): Promise<MealLogDetail>
 /**
  * List the user's meal logs with cursor pagination. Mirrors: list_meal_logs
  * @param cursor - Optional cursor for the next page.
+ * @param filters - Optional time-range filters (ISO 8601 UTC strings).
  */
 export async function listMealLogs(
   cursor?: string,
+  filters?: { loggedAfter?: string; loggedBefore?: string },
 ): Promise<PaginatedResponse<MealLogListItem>> {
-  const params = cursor ? `?cursor=${cursor}` : "";
+  const searchParams = new URLSearchParams();
+  if (cursor) searchParams.set("cursor", cursor);
+  if (filters?.loggedAfter) searchParams.set("logged_after", filters.loggedAfter);
+  if (filters?.loggedBefore) searchParams.set("logged_before", filters.loggedBefore);
+  const qs = searchParams.toString();
   return apiFetch<PaginatedResponse<MealLogListItem>>(
-    `/api/calories/logs/${params}`,
+    `/api/calories/logs/${qs ? `?${qs}` : ""}`,
   );
 }
 

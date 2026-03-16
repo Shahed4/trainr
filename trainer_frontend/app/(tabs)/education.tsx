@@ -14,7 +14,6 @@ import Animated, {
   runOnJS,
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
   withTiming,
 } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -75,18 +74,17 @@ export default function EducationScreen() {
     fetchData();
   }, [fetchData]);
 
-  /** Advance to the next card after a swipe. */
+  /** Advance to the next card and instantly reset position for a seamless feel. */
   function goToNextCard() {
     setCurrentIndex((prev) => (prev + 1) % Math.max(cards.length, 1));
     setIsFlipped(false);
-    translateX.value = 0;
     rotateY.value = 0;
   }
 
   /** Toggle flip animation. */
   function toggleFlip() {
     const target = isFlipped ? 0 : 180;
-    rotateY.value = withTiming(target, { duration: 400 });
+    rotateY.value = withTiming(target, { duration: 300 });
     setIsFlipped(!isFlipped);
   }
 
@@ -95,19 +93,23 @@ export default function EducationScreen() {
       translateX.value = event.translationX;
     })
     .onEnd((event) => {
-      if (Math.abs(event.translationX) > SCREEN_WIDTH * 0.25) {
-        translateX.value = withSpring(
-          event.translationX > 0 ? SCREEN_WIDTH : -SCREEN_WIDTH,
-          { damping: 15 },
-          () => runOnJS(goToNextCard)(),
-        );
+      if (Math.abs(event.translationX) > SCREEN_WIDTH * 0.15) {
+        const direction = event.translationX > 0 ? SCREEN_WIDTH : -SCREEN_WIDTH;
+        translateX.value = withTiming(direction, { duration: 150 }, () => {
+          runOnJS(goToNextCard)();
+          translateX.value = 0;
+        });
       } else {
-        translateX.value = withSpring(0);
+        translateX.value = withTiming(0, { duration: 100 });
       }
     });
 
   const cardAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: translateX.value }],
+    transform: [
+      { translateX: translateX.value },
+      { rotateZ: `${(translateX.value / SCREEN_WIDTH) * 12}deg` },
+    ],
+    opacity: 1 - Math.min(Math.abs(translateX.value) / SCREEN_WIDTH, 0.4),
   }));
 
   const frontStyle = useAnimatedStyle(() => ({
@@ -182,16 +184,12 @@ export default function EducationScreen() {
           </View>
         ) : cards.length > 0 && currentCard ? (
           <View className="flex-1 items-center">
-            <Text className="text-sm text-gray-400 mb-3">
-              {currentIndex + 1} / {cards.length}
-            </Text>
             <GestureDetector gesture={swipeGesture}>
               <Animated.View
                 style={[cardAnimatedStyle, { width: SCREEN_WIDTH - 48 }]}
               >
                 <Pressable onPress={toggleFlip}>
                   <View className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-6 min-h-[260px] justify-center shadow-sm">
-                    {/* Front */}
                     <Animated.View style={frontStyle}>
                       <Text className="text-xs font-semibold text-primary uppercase tracking-wider mb-3">
                         {currentCard.category}
@@ -203,7 +201,6 @@ export default function EducationScreen() {
                         Tap to reveal answer
                       </Text>
                     </Animated.View>
-                    {/* Back */}
                     <Animated.View style={[backStyle, { position: "absolute", top: 24, left: 24, right: 24 }]}>
                       <Text className="text-xs font-semibold text-green-600 uppercase tracking-wider mb-3">
                         Answer
@@ -216,9 +213,6 @@ export default function EducationScreen() {
                 </Pressable>
               </Animated.View>
             </GestureDetector>
-            <Text className="text-xs text-gray-400 mt-4">
-              Swipe left or right for next card
-            </Text>
           </View>
         ) : (
           <View className="items-center py-10">

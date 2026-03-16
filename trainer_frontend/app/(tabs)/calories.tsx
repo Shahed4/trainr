@@ -18,6 +18,17 @@ import { useColorScheme } from "@/hooks/use-color-scheme";
 import { analyzeMealImage, listMealLogs } from "@/lib/api";
 import type { MealLogListItem } from "@/lib/types";
 
+/** Return UTC ISO boundaries for the device's local "today" (midnight to midnight). */
+function getTodayBounds(): { loggedAfter: string; loggedBefore: string } {
+  const now = new Date();
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+  return {
+    loggedAfter: startOfDay.toISOString(),
+    loggedBefore: endOfDay.toISOString(),
+  };
+}
+
 /**
  * Calorie tracking tab — shows daily summary, paginated meal log list,
  * and a camera button that sends food photos to Gemini for analysis.
@@ -33,18 +44,13 @@ export default function CaloriesScreen() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
-  /** Total calories from all loaded items (approximate — see backend for day filtering). */
-  const todayCalories = items
-    .filter((item) => {
-      const d = new Date(item.logged_at);
-      const today = new Date();
-      return d.toDateString() === today.toDateString();
-    })
-    .reduce((sum, item) => sum + item.calories, 0);
+  /** All returned items are already today-only (server-filtered), so sum directly. */
+  const todayCalories = items.reduce((sum, item) => sum + item.calories, 0);
 
   const fetchInitial = useCallback(async () => {
     try {
-      const res = await listMealLogs();
+      const bounds = getTodayBounds();
+      const res = await listMealLogs(undefined, bounds);
       setItems(res.results);
       setCursor(res.next_cursor);
       setHasMore(res.has_more);
@@ -64,7 +70,8 @@ export default function CaloriesScreen() {
     if (!hasMore || !cursor || isLoadingMore) return;
     setIsLoadingMore(true);
     try {
-      const res = await listMealLogs(cursor);
+      const bounds = getTodayBounds();
+      const res = await listMealLogs(cursor, bounds);
       setItems((prev) => [...prev, ...res.results]);
       setCursor(res.next_cursor);
       setHasMore(res.has_more);

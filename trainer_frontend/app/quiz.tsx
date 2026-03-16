@@ -34,14 +34,16 @@ export default function QuizScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState<QuizSubmitResponse | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
       try {
         const data = await getQuizQuestions();
         setQuestions(data);
-      } catch {
-        // Handle error
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to load quiz";
+        setError(message);
       } finally {
         setIsLoading(false);
       }
@@ -62,8 +64,9 @@ export default function QuizScreen() {
       try {
         const response = await submitQuiz(newAnswers);
         setResult(response);
-      } catch {
-        // Handle error
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to submit quiz";
+        setError(message);
       } finally {
         setIsSubmitting(false);
       }
@@ -155,6 +158,33 @@ export default function QuizScreen() {
             <Text className="text-white text-base font-semibold">Done</Text>
           </Pressable>
         </ScrollView>
+      </SafeAreaView>
+    );
+  }
+
+  // ─── Error / empty state ────────────────────────────────────────────
+  if (error || questions.length === 0) {
+    return (
+      <SafeAreaView className="flex-1 bg-white dark:bg-[#151718]">
+        <View className="flex-1 items-center justify-center p-6">
+          <Ionicons
+            name="alert-circle-outline"
+            size={64}
+            color={Colors[colorScheme].icon}
+          />
+          <Text className="text-lg font-semibold text-gray-900 dark:text-white mt-4 text-center">
+            {error ?? "No quiz questions available"}
+          </Text>
+          <Text className="text-sm text-gray-400 mt-2 text-center">
+            Please try again later or check your connection.
+          </Text>
+          <Pressable
+            className="mt-6 bg-primary px-8 py-4 rounded-xl"
+            onPress={() => router.back()}
+          >
+            <Text className="text-white text-base font-semibold">Go Back</Text>
+          </Pressable>
+        </View>
       </SafeAreaView>
     );
   }

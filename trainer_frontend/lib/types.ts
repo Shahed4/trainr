@@ -8,11 +8,16 @@ export interface UserProfile {
   dietary_preferences: string[];
   current_body_type: string;
   goal_body_type: string;
+  weight: number | null;
+  height: number | null;
+  timeline: string;
   knowledge_rank: number;
   calorie_target: number;
   protein_target: number;
   carbs_target: number;
   fat_target: number;
+  recommended_daily_calories: number | null;
+  recommended_weekly_workouts: number | null;
   created_at: string;
   updated_at: string;
 }
